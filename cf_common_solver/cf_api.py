@@ -102,7 +102,7 @@ def problem_key_to_str(key: ProblemKey) -> str:
     return f"{contest_id}|{index}|{name}"
 
 
-@st.cache_data(ttl=1800, show_spinner=False)
+@st.cache_data(ttl=300, show_spinner=False)
 def get_solved_problems(handle: str) -> dict[ProblemKey, dict[str, Any]]:
     """
     Return every problem a handle has solved (verdict == OK), deduplicated,

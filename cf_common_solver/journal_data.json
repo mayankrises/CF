@@ -144,8 +144,8 @@
     "stars": 0
   },
   "1458|A|Row GCD": {
-    "review": "",
-    "stars": 0
+    "review": "gcd(x , y) = gcd(x , y-x)",
+    "stars": 2
   },
   "1459|B|Move and Turn": {
     "review": "",
@@ -812,6 +812,18 @@
     "stars": 0
   },
   "2242|C|Unstable Elements": {
+    "review": "",
+    "stars": 0
+  },
+  "2244|C|Stepan and Permutation": {
+    "review": "",
+    "stars": 0
+  },
+  "2244|D|Yaroslav and Productivity": {
+    "review": "",
+    "stars": 0
+  },
+  "2244|E|Masha and the Garland": {
     "review": "",
     "stars": 0
   },

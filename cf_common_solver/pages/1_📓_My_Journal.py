@@ -69,7 +69,12 @@ full_df = pd.DataFrame(rows)
 with st.sidebar:
     st.header("Filters")
 
+    if st.button("🔄 Refresh data", use_container_width=True, help="Clear cache and re-fetch from Codeforces"):
+        st.cache_data.clear()
+        st.rerun()
+
     search = st.text_input("Search by name or problem id", "")
+
 
     rated_df = full_df[full_df["rating"] > 0]
     if not rated_df.empty:
