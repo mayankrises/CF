@@ -93,6 +93,15 @@ def format_solved_date(timestamp: int) -> str:
     return datetime.fromtimestamp(timestamp).strftime("%d-%m-%Y %I:%M %p")
 
 
+def problem_key_to_str(key: ProblemKey) -> str:
+    """
+    Turn a (contestId, index, name) ProblemKey into a stable string,
+    safe to use as a JSON object key (e.g. for the journal store).
+    """
+    contest_id, index, name = key
+    return f"{contest_id}|{index}|{name}"
+
+
 @st.cache_data(ttl=1800, show_spinner=False)
 def get_solved_problems(handle: str) -> dict[ProblemKey, dict[str, Any]]:
     """
@@ -119,11 +128,17 @@ def get_solved_problems(handle: str) -> dict[ProblemKey, dict[str, Any]]:
         contest_id = problem.get("contestId")
         index = problem.get("index")
         name = problem.get("name", "Unknown problem")
+        submission_id = submission.get("id")
 
         if contest_id is not None and index is not None:
             url = f"https://codeforces.com/problemset/problem/{contest_id}/{index}"
         else:
             url = ""
+
+        if contest_id is not None and submission_id is not None:
+            solution_url = f"https://codeforces.com/contest/{contest_id}/submission/{submission_id}"
+        else:
+            solution_url = ""
 
         info = {
             "rating": problem.get("rating"),
@@ -134,6 +149,8 @@ def get_solved_problems(handle: str) -> dict[ProblemKey, dict[str, Any]]:
             "solved_timestamp": solved_timestamp,
             "solved_date": format_solved_date(solved_timestamp),
             "url": url,
+            "submission_id": submission_id,
+            "solution_url": solution_url,
         }
 
         if problem_key not in solved or solved_timestamp < solved[problem_key]["solved_timestamp"]:
