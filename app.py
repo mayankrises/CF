@@ -31,6 +31,11 @@ with st.form("handles_form"):
     handle1 = col1.text_input("Handle 1 (required)", placeholder="tourist")
     handle2 = col2.text_input("Handle 2 (optional)", placeholder="Benq")
     handle3 = col3.text_input("Handle 3 (optional)", placeholder="Um_nik")
+    exclude_handle = st.text_input(
+        "Exclude handle (optional)",
+        placeholder="e.g. jiangly",
+        help="Any problem this handle has already solved will be removed from the results below.",
+    ).strip()
     submitted = st.form_submit_button("Find common problems", use_container_width=True)
 
 if not submitted:
@@ -55,7 +60,20 @@ for i, handle in enumerate(handles):
     except CodeforcesAPIError as error:
         errors.append(f"**{handle}**: {error}")
 
-progress.progress(len(handles) / (len(handles) + 1), text="Fetching global problem statistics…")
+excluded_solved: dict = {}
+if exclude_handle and exclude_handle.lower() not in [h.lower() for h in handles]:
+    progress.progress(
+        len(handles) / (len(handles) + 2), text=f"Fetching submissions for {exclude_handle} (to exclude)…"
+    )
+    try:
+        excluded_solved = get_solved_problems(exclude_handle)
+    except CodeforcesAPIError as error:
+        errors.append(f"**{exclude_handle}** (exclude): {error}")
+
+progress.progress(
+    (len(handles) + 1) / (len(handles) + 2) if exclude_handle else len(handles) / (len(handles) + 1),
+    text="Fetching global problem statistics…",
+)
 try:
     solve_counts = fetch_problem_statistics()
 except CodeforcesAPIError as error:
@@ -85,6 +103,16 @@ if len(valid_handles) == 1:
     st.info("Only one valid handle entered — showing every problem they've solved.")
 else:
     st.subheader(f"✅ {len(common_keys)} problem(s) solved by all {len(valid_handles)} handles")
+
+# --- Declude: drop anything the exclude handle has already solved ----------
+if excluded_solved:
+    before_count = len(common_keys)
+    common_keys = common_keys - set(excluded_solved.keys())
+    removed_count = before_count - len(common_keys)
+    st.caption(
+        f"🚫 Removed {removed_count} problem(s) already solved by **{exclude_handle}** "
+        f"— {len(common_keys)} remaining."
+    )
 
 if not common_keys:
     st.warning("No common problems found between the given handles.")
@@ -127,10 +155,15 @@ df["global_solves"] = df["global_solves"].replace(-1, pd.NA)
 # --- Download ------------------------------------------------------------
 csv_df = df.drop(columns=["url"]).rename(columns={"global_solves": "global_solves_(accepted_count)"})
 csv_bytes = csv_df.to_csv(index=False).encode("utf-8-sig")
+csv_filename = "_".join(valid_handles) + "_common_solved"
+if excluded_solved:
+    csv_filename += f"_not_{exclude_handle}"
+csv_filename += ".csv"
+
 st.download_button(
     "⬇️ Download as CSV",
     data=csv_bytes,
-    file_name="_".join(valid_handles) + "_common_solved.csv",
+    file_name=csv_filename,
     mime="text/csv",
     use_container_width=True,
 )
