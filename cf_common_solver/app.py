@@ -134,7 +134,7 @@ for key in common_keys:
         "url": base["url"] or None,
     }
     for h in valid_handles:
-        row[f"{h} solved on"] = solved_by_handle[h][key]["solved_date"]
+        row[f"{h} solved on"] = pd.to_datetime(solved_by_handle[h][key]["solved_timestamp"], unit="s")
 
     rows.append(row)
 
@@ -188,7 +188,10 @@ for rating in df["rating"].unique():
                 ),
                 "url": st.column_config.LinkColumn("Link", display_text="Open ↗"),
                 **{
-                    col: st.column_config.TextColumn(col.replace(" solved on", "'s solve date"))
+                    col: st.column_config.DatetimeColumn(
+                        col.replace(" solved on", "'s solve date"),
+                        format="DD-MM-YYYY hh:mm A",
+                    )
                     for col in date_columns
                 },
             },

@@ -57,7 +57,7 @@ for key, info in solved.items():
             "tags": ", ".join(info["tags"]),
             "problem_link": info["url"] or None,
             "solution_link": info["solution_url"] or None,
-            "solved_on": info["solved_date"],
+            "solved_on": pd.to_datetime(info["solved_timestamp"], unit="s"),
             "stars": entry["stars"],
             "review": entry["review"],
         }
@@ -158,7 +158,7 @@ edited_df = st.data_editor(
         "tags": st.column_config.TextColumn("Tags", width="large", disabled=True),
         "problem_link": st.column_config.LinkColumn("Problem", display_text="Open ↗", disabled=True),
         "solution_link": st.column_config.LinkColumn("My Solution", display_text="View ↗", disabled=True),
-        "solved_on": st.column_config.TextColumn("Solved on", disabled=True),
+        "solved_on": st.column_config.DatetimeColumn("Solved on", format="DD-MM-YYYY hh:mm A", disabled=True),
         "stars": st.column_config.SelectboxColumn(
             "Difficulty ★", options=[0, 1, 2, 3, 4, 5], help="Your own difficulty rating, 0 = not rated yet"
         ),
